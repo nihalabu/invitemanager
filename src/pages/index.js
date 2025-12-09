@@ -11,12 +11,12 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
   const [filterType, setFilterType] = useState('all'); // 'all', 'family', 'friend'
-  
+
   // Login form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  
+
   const [formData, setFormData] = useState({
     invitedPersonName: '',
     familyMemberCount: 1,
@@ -40,7 +40,7 @@ export default function Home() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
-    
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setEmail('');
@@ -84,18 +84,18 @@ export default function Home() {
 
   const handleAddInvitation = async (e) => {
     e.preventDefault();
-    
+
     if (formData.invitedPersonName.trim() === '') {
       alert('Please enter the person name');
       return;
     }
-    
+
     try {
       const cleanedFamilyMembers = formData.familyMembers.map(m => m.trim());
-      
+
       // Create temporary ID for optimistic update
       const tempId = 'temp_' + Date.now();
-      
+
       const newInvitation = {
         id: tempId,
         invitedPersonName: formData.invitedPersonName.trim(),
@@ -107,10 +107,10 @@ export default function Home() {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       // Update UI immediately
       setInvitations([...invitations, newInvitation]);
-      
+
       // Reset form immediately
       setFormData({
         invitedPersonName: '',
@@ -121,7 +121,7 @@ export default function Home() {
         type: 'family'
       });
       setShowAddForm(false);
-      
+
       // Save to database in background
       const docRef = await addDoc(collection(db, 'invitations'), {
         invitedPersonName: newInvitation.invitedPersonName,
@@ -133,12 +133,12 @@ export default function Home() {
         createdAt: newInvitation.createdAt,
         updatedAt: newInvitation.updatedAt
       });
-      
+
       // Replace temp ID with real ID from Firestore
-      setInvitations(prev => prev.map(inv => 
+      setInvitations(prev => prev.map(inv =>
         inv.id === tempId ? { ...inv, id: docRef.id } : inv
       ));
-      
+
     } catch (error) {
       console.error('Error adding invitation:', error);
       alert('Failed to add invitation: ' + error.message);
@@ -150,10 +150,10 @@ export default function Home() {
     setUpdatingId(id);
     try {
       // Update UI immediately
-      setInvitations(invitations.map(inv => 
+      setInvitations(invitations.map(inv =>
         inv.id === id ? { ...inv, isInvited: !currentStatus } : inv
       ));
-      
+
       // Update database
       await updateDoc(doc(db, 'invitations', id), {
         isInvited: !currentStatus,
@@ -172,7 +172,7 @@ export default function Home() {
       try {
         // Remove from UI immediately
         setInvitations(invitations.filter(inv => inv.id !== id));
-        
+
         // Delete from database in background
         await deleteDoc(doc(db, 'invitations', id));
       } catch (error) {
@@ -186,20 +186,20 @@ export default function Home() {
   const filteredInvitations = invitations.filter(inv => {
     const search = searchTerm.toLowerCase();
     const matchesSearch = inv.invitedPersonName.toLowerCase().includes(search) ||
-             inv.familyMembers.some(member => member.toLowerCase().includes(search));
-    
+      inv.familyMembers.some(member => member.toLowerCase().includes(search));
+
     const matchesType = filterType === 'all' || inv.type === filterType;
-    
+
     return matchesSearch && matchesType;
   });
 
   const updateFamilyMembers = (count) => {
     const numCount = parseInt(count) || 1;
     const newMembers = Array(numCount).fill('');
-    setFormData({ 
-      ...formData, 
-      familyMemberCount: numCount, 
-      familyMembers: newMembers 
+    setFormData({
+      ...formData,
+      familyMemberCount: numCount,
+      familyMembers: newMembers
     });
   };
 
@@ -228,7 +228,7 @@ export default function Home() {
         <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
           <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Wedding Invitation Manager</h1>
           <p className="text-gray-600 mb-6 text-center">Sign in to manage invitations</p>
-          
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -241,7 +241,7 @@ export default function Home() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
@@ -282,7 +282,7 @@ export default function Home() {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Wedding Invitations</h1>
               <p className="text-gray-600 text-sm mt-1">Welcome, {user.email}</p>
             </div>
-            <button 
+            <button
               onClick={() => signOut(auth)}
               className="text-red-600 hover:text-red-700 text-sm font-medium"
             >
@@ -317,31 +317,28 @@ export default function Home() {
           <div className="flex gap-2 mb-4 overflow-x-auto">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                filterType === 'all'
+              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'all'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               All ({invitations.length})
             </button>
             <button
               onClick={() => setFilterType('family')}
-              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                filterType === 'family'
+              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'family'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               👨‍👩‍👧‍👦 Families ({invitations.filter(inv => inv.type === 'family').length})
             </button>
             <button
               onClick={() => setFilterType('friend')}
-              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                filterType === 'friend'
+              className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'friend'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               👤 Friends ({invitations.filter(inv => inv.type === 'friend').length})
             </button>
@@ -392,7 +389,7 @@ export default function Home() {
                   type="text"
                   placeholder={formData.type === 'family' ? 'Family Head Name *' : 'Friend Name *'}
                   value={formData.invitedPersonName}
-                  onChange={(e) => setFormData({...formData, invitedPersonName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, invitedPersonName: e.target.value })}
                   className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -400,26 +397,34 @@ export default function Home() {
                   type="tel"
                   placeholder="Phone (optional)"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               {formData.type === 'family' && (
                 <>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Number of Family Members: {formData.familyMemberCount}
+                      Number of Family Members
                     </label>
                     <input
-                      type="number"
-                      min="1"
-                      max="20"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="Enter number (e.g., 4)"
                       value={formData.familyMemberCount}
-                      onChange={(e) => updateFamilyMembers(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 20)) {
+                          updateFamilyMembers(value || '1');
+                        }
+                      }}
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Enter a number between 1 and 20</p>
                   </div>
+
 
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Family Members Names (optional)</label>
@@ -462,11 +467,10 @@ export default function Home() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-xl font-bold text-gray-800">{invitation.invitedPersonName}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        invitation.type === 'friend' 
-                          ? 'bg-purple-100 text-purple-700' 
+                      <span className={`text-xs px-2 py-1 rounded-full ${invitation.type === 'friend'
+                          ? 'bg-purple-100 text-purple-700'
                           : 'bg-blue-100 text-blue-700'
-                      }`}>
+                        }`}>
                         {invitation.type === 'friend' ? '👤 Friend' : '👨‍👩‍👧‍👦 Family'}
                       </span>
                     </div>
@@ -491,11 +495,10 @@ export default function Home() {
                     <button
                       onClick={() => toggleInvited(invitation.id, invitation.isInvited)}
                       disabled={updatingId === invitation.id}
-                      className={`px-6 py-2 rounded-lg font-medium transition ${
-                        invitation.isInvited 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                      className={`px-6 py-2 rounded-lg font-medium transition ${invitation.isInvited
+                          ? 'bg-green-600 text-white hover:bg-green-700'
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      } ${updatingId === invitation.id ? 'opacity-50 cursor-wait' : ''}`}
+                        } ${updatingId === invitation.id ? 'opacity-50 cursor-wait' : ''}`}
                     >
                       {invitation.isInvited ? '✓ Invited' : 'Not Invited'}
                     </button>
