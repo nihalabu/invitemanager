@@ -195,13 +195,15 @@ export default function Home() {
 
   const updateFamilyMembers = (count) => {
     const numCount = parseInt(count) || 1;
-    const newMembers = Array(numCount).fill('');
+    const clampedCount = Math.max(1, Math.min(20, numCount));
+    const newMembers = Array(clampedCount).fill('');
     setFormData({
       ...formData,
-      familyMemberCount: numCount,
+      familyMemberCount: clampedCount.toString(),
       familyMembers: newMembers
     });
   };
+
 
   const updateMemberName = (index, name) => {
     const updatedMembers = [...formData.familyMembers];
@@ -318,8 +320,8 @@ export default function Home() {
             <button
               onClick={() => setFilterType('all')}
               className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
               All ({invitations.length})
@@ -327,8 +329,8 @@ export default function Home() {
             <button
               onClick={() => setFilterType('family')}
               className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'family'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
               👨‍👩‍👧‍👦 Families ({invitations.filter(inv => inv.type === 'family').length})
@@ -336,8 +338,8 @@ export default function Home() {
             <button
               onClick={() => setFilterType('friend')}
               className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${filterType === 'friend'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
               👤 Friends ({invitations.filter(inv => inv.type === 'friend').length})
@@ -408,22 +410,34 @@ export default function Home() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Number of Family Members
                     </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="Enter number (e.g., 4)"
-                      value={formData.familyMemberCount}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 20)) {
-                          updateFamilyMembers(value || '1');
-                        }
-                      }}
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Enter a number between 1 and 20</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCount = Math.max(1, parseInt(formData.familyMemberCount) - 1);
+                          updateFamilyMembers(newCount.toString());
+                        }}
+                        className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center text-lg font-bold transition"
+                      >
+                        -
+                      </button>
+                      <div className="flex-1 text-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-lg">
+                        {formData.familyMemberCount}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCount = Math.min(20, parseInt(formData.familyMemberCount) + 1);
+                          updateFamilyMembers(newCount.toString());
+                        }}
+                        className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center text-lg font-bold transition"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">1-20 members (tap + or - to adjust)</p>
                   </div>
+
 
 
                   <div className="mb-4">
@@ -468,8 +482,8 @@ export default function Home() {
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-xl font-bold text-gray-800">{invitation.invitedPersonName}</h3>
                       <span className={`text-xs px-2 py-1 rounded-full ${invitation.type === 'friend'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-blue-100 text-blue-700'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
                         }`}>
                         {invitation.type === 'friend' ? '👤 Friend' : '👨‍👩‍👧‍👦 Family'}
                       </span>
@@ -496,8 +510,8 @@ export default function Home() {
                       onClick={() => toggleInvited(invitation.id, invitation.isInvited)}
                       disabled={updatingId === invitation.id}
                       className={`px-6 py-2 rounded-lg font-medium transition ${invitation.isInvited
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         } ${updatingId === invitation.id ? 'opacity-50 cursor-wait' : ''}`}
                     >
                       {invitation.isInvited ? '✓ Invited' : 'Not Invited'}
